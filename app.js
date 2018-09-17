@@ -7,10 +7,10 @@ const BusBoy = require('busboy')
  * @param {Object} req ReadStream
  * @param {String} uploadDir 文件上传目录
  */
-function parseFormData (req, uploadDir) {
+function parseFormData (req, uploadDir = './upload') {
   return new Promise((resolve, reject) => {
-    let dir = path.resolve(__dirname, uploadDir || './upload')
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+    let origin = req.headers.origin
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
     let busboy = new BusBoy({headers: req.headers})
     let parsed = {}
     let urls = []
@@ -21,9 +21,10 @@ function parseFormData (req, uploadDir) {
       let timestamp = Date.now()
       let extname = path.extname(filename)
       let name = path.basename(filename, extname)
-      let saveTo = path.resolve(__dirname, `${dir}/${name}_${timestamp}${extname}`)
+      let uploadPath = `${uploadDir}/${name}_${timestamp}${extname}`
+      let saveTo = path.resolve(__dirname, uploadPath)
       file.pipe(fs.createWriteStream(saveTo))
-      urls.push(saveTo)
+      urls.push(path.join(origin, uploadPath))
       parsed[fieldname] = urls
     })
     busboy.on('finish', () => {
