@@ -7,10 +7,43 @@
   <title>Document</title>
 </head>
 <body>
-  <form action="/upload" method="POST" enctype="multipart/form-data">
-    <label for="name">姓名：<input type="text" name="name"></label>
-    <label for="photo">照片：<input type="file" name="file" multiple></label>
+  <form id="form">
+    <label>姓名：<input type="text" name="name" id="name"></label>
+    <label>照片：<input type="file" name="file" id="file" multiple></label>
+    <label>照片2：<input type="file" name="file2" id="file2" multiple></label>
     <button>提交</button>
   </form>
+  <p id="msg"></p>
+  <script>
+  let files,
+    file2,
+    form = document.getElementById('form'),
+    fileIpt = document.getElementById('file'),
+    fileIpt2 = document.getElementById('file2')
+  form.addEventListener('submit', e => {
+    e.preventDefault()
+    let xhr = new XMLHttpRequest()
+    let formData = new FormData()
+    formData.append('name', document.getElementById('name').value)
+    files.forEach(file => {
+      formData.append('file', file, file.name)
+    })
+    files2.forEach(file => {
+      formData.append('file2', file, file.name)
+    })
+    xhr.open('POST', '/upload', true)
+    console.log(xhr)
+    xhr.upload.onprogress = e => {
+      document.getElementById('msg').innerHTML = `进度：${(e.loaded / e.total * 100).toFixed(2)}%`
+    }
+    xhr.send(formData)
+  }, false)
+  fileIpt.addEventListener('change', e => {
+    files = Array.from(e.target.files)
+  }, false)
+  fileIpt2.addEventListener('change', e => {
+    files2 = Array.from(e.target.files)
+  }, false)
+  </script>
 </body>
 </html>

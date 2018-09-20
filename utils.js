@@ -10,11 +10,9 @@ module.exports = {
    */
   parseFormData (req, limit, uploadDir = './upload') {
     return new Promise((resolve, reject) => {
-      let origin = req.headers.origin
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
       let busboy = new BusBoy({headers: req.headers})
       let parsed = {}
-      let urls = []
       busboy.on('field', (fieldname, val) => {
         parsed[fieldname] = val
       })
@@ -34,18 +32,17 @@ module.exports = {
         file.on('data', data => {
           received += data.length
           if (limit && limit.fileSize && received > limit.fileSize) {
-            file.destroy()
             return reject(new Error('文件过大'))
           }
           if (!writeStream.write(data)) {
             file.pause()
           }
+          writeStream.setMaxListeners(0)
           writeStream.on('drain', () => {
             file.resume()
           })
         })
-        urls.push(path.join(origin, uploadPath))
-        parsed[fieldname] = urls
+        parsed[fieldname] ? parsed[fieldname].push(uploadPath) : (parsed[fieldname] = [uploadPath])
       })
       busboy.on('finish', () => {
         resolve(parsed)

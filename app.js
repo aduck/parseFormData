@@ -7,7 +7,7 @@ module.exports =  (req, res) => {
     res.write(fs.readFileSync('./form.html'))
     res.end()
   } else if (req.url === '/upload') {
-    parseFormData(req, {fileSize: upload.maxSize, accept: '.jpg, .png'}, upload.path)
+    parseFormData(req, {fileSize: upload.maxSize}, upload.path)
       .then(parsed => {
         res.writeHead(200, {'content-type': 'application/json'})
         res.write(JSON.stringify(parsed))
